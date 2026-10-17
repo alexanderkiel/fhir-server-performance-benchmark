@@ -5,6 +5,7 @@ volumes:
   promdata:
   tgzdata:
   mssqldata:
+  blazedata:
 
 services:
 
@@ -229,6 +230,44 @@ services:
       - "13120:52773"
 
 ## ------------------------------------------------
+## Blaze
+## ------------------------------------------------
+## Blaze keeps FHIR data in an embedded RocksDB, so like intersystems this one
+## container is app + datastore: its budget is the FHIR app's (8 cpu / 24G) plus
+## the datastore's (8 cpu / 30G). Sized per Blaze's production configuration
+## guide (https://samply.github.io/blaze/production-configuration.html): 1/4 of
+## RAM for the heap, 1/4 for the RocksDB block cache, the rest left to the OS
+## page cache for the database files.
+  blaze:
+    container_name: perf-blaze
+    image: samply/blaze:latest
+    pull_policy: always
+    deploy:
+      resources:
+        limits:
+          cpus: '16'
+          memory: 54G
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx13g"
+      DB_BLOCK_CACHE_SIZE: 13312
+      # One indexer thread per core, as the guide recommends.
+      DB_RESOURCE_INDEXER_THREADS: 16
+      # Sized to the max number of concurrently writing clients (crud.js: 300
+      # VUs); threads are created on demand, so this is only a ceiling.
+      DB_RESOURCE_STORE_KV_THREADS: 300
+      BASE_URL: http://localhost:13130
+    volumes:
+      - blazedata:/app/data
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 10
+    ports:
+      - "13130:8080"
+
+## ------------------------------------------------
 ## Medplum
 ## ------------------------------------------------
   medplum:
@@ -431,6 +470,8 @@ services:
       microsoft-checker:
         condition: service_healthy
       intersystems:
+        condition: service_healthy
+      blaze:
         condition: service_healthy
     profiles:
       - donotstart

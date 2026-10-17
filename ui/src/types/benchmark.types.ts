@@ -6,6 +6,7 @@ export interface BenchmarkDataPoint {
   microsoft: number;
   wso2: number;
   intersystems: number;
+  blaze: number;
 }
 
 export interface BenchmarkResult {
@@ -74,7 +75,7 @@ export interface TypedBenchmarkReport {
 }
 
 // Utility types for working with the data
-export type ServerName = 'aidbox' | 'medplum' | 'hapi' | 'microsoft' | 'wso2' | 'intersystems';
+export type ServerName = 'aidbox' | 'medplum' | 'hapi' | 'microsoft' | 'wso2' | 'intersystems' | 'blaze';
 
 export interface ServerPerformance {
   [key: string]: number;

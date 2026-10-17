@@ -196,6 +196,13 @@ export function loadInfraSnippets(): Record<string, NodeInfo> {
         fileSnippet("infra/intersystems/gather-stats.sh", "bash"),
       ],
     },
+    blaze: {
+      id: "blaze",
+      title: "Blaze",
+      description:
+        "JVM FHIR server from Samply that keeps FHIR data in an embedded RocksDB, so one container is both app and datastore. Sized per Blaze's production configuration guide: 1/4 of RAM for the heap, 1/4 for the RocksDB block cache, the rest for the OS page cache. Blaze can't resolve conditional references, so for it the import test rewrites the Synthea bundles' Practitioner/Organization/Location?identifier=... references to literal ones before posting. It also doesn't implement the :contains string modifier, so the search test only runs the default string match against it. Native Prometheus endpoint on :8081/metrics.",
+      snippets: [compose("blaze")],
+    },
     postgres: {
       id: "postgres",
       title: "PostgreSQL 18",

@@ -101,10 +101,27 @@ function expandReferences(set, baseUrl, params) {
   return set
 }
 
+// Drop the modifiers listed in UNSUPPORTED_MODIFIERS (comma-separated, e.g.
+// ":contains" for Blaze) from the set. A server either ignores an unsupported
+// modifier, answering with a cheap unfiltered search, or rejects it right away;
+// both would make its numbers look better than they are.
+function dropUnsupportedModifiers(set) {
+  const unsupported = (__ENV.UNSUPPORTED_MODIFIERS || '').split(',').filter(Boolean)
+  if (!unsupported.length) return set
+  for (const resourceTypes of Object.values(set)) {
+    for (const params of Object.values(resourceTypes)) {
+      for (const conf of Object.values(params)) {
+        if (conf.modifiers) conf.modifiers = conf.modifiers.filter(m => !unsupported.includes(m))
+      }
+    }
+  }
+  return set
+}
+
 export function setup() {
   const baseUrl = __ENV.BASE_URL
   const params = { headers: headers(), timeout: '300s' }
-  const expandedSet = expandReferences(searchSet, baseUrl, params)
+  const expandedSet = expandReferences(dropUnsupportedModifiers(searchSet), baseUrl, params)
   return { baseUrl, params, searchSet: expandedSet }
 }
 

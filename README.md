@@ -13,11 +13,13 @@
 - Microsoft FHIR — .NET R4, SQL Server 2022
 - WSO2 FHIR — Go, PostgreSQL
 - InterSystems IRIS for Health — Community Edition, embedded IRIS database
+- Blaze — JVM, embedded RocksDB
 
 Aidbox, HAPI, Medplum and WSO2 share one PostgreSQL instance (a database per server).
 The Microsoft FHIR server only supports SQL Server, so it runs against its own
 dedicated SQL Server. InterSystems IRIS for Health stores FHIR data in its own
-embedded database, so it is a single container. Tests run sequentially, so only
+embedded database, so it is a single container; the same goes for Blaze and its
+embedded RocksDB. Tests run sequentially, so only
 one server + database pair is under load at a time.
 
 ## Local development
@@ -38,6 +40,7 @@ Open [http://localhost:13080](http://localhost:13080) and activate Aidbox.
 | Microsoft FHIR | [http://localhost:13100](http://localhost:13100) | [http://microsoft:8080](http://microsoft:8080) |
 | WSO2 FHIR      | [http://localhost:13110](http://localhost:13110) | [http://wso2:9090](http://wso2:9090) |
 | InterSystems IRIS for Health | [http://localhost:13120/fhir/r4](http://localhost:13120/fhir/r4) | [http://intersystems:52773/fhir/r4](http://intersystems:52773/fhir/r4) |
+| Blaze          | [http://localhost:13130/fhir](http://localhost:13130/fhir) | [http://blaze:8080/fhir](http://blaze:8080/fhir) |
 | Grafana        | [http://localhost:13000](http://localhost:13000) | [http://grafana:3000](http://grafana:3000) |
 | Prometheus     | [http://localhost:13010](http://localhost:13010) | [http://prometheus:9090](http://prometheus:9090) |
 
@@ -67,7 +70,7 @@ Pull images and start all services (FHIR servers, databases, monitoring):
 | Flag  | Description                                                                    |
 |-------|--------------------------------------------------------------------------------|
 | `-t`  | Test file to run: `/k6/prewarm.js`, `/k6/crud.js`, `/k6/import.js`, `/k6/search.js` (default: `/k6/prewarm.js`) |
-| `-s`  | Target server: `aidbox`, `hapi`, `medplum`, `microsoft`, `wso2`, `intersystems`. Omit to run on **all** servers sequentially |
+| `-s`  | Target server: `aidbox`, `hapi`, `medplum`, `microsoft`, `wso2`, `intersystems`, `blaze`. Omit to run on **all** servers sequentially |
 | `-id` | Run ID that tags the metrics. Defaults to the current UTC timestamp (or the `RUNID` env var) |
 | `-f`  | Extra Docker Compose file(s); repeatable. Defaults to `docker-compose.yaml`     |
 

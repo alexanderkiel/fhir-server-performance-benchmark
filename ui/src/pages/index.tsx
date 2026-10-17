@@ -10,20 +10,21 @@ const PAGE_SIZE = 10;
 
 const ASSET_BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-const SERVERS: { key: "aidbox" | "medplum" | "hapi" | "microsoft" | "wso2" | "intersystems"; label: string; icon: string }[] = [
+const SERVERS: { key: "aidbox" | "medplum" | "hapi" | "microsoft" | "wso2" | "intersystems" | "blaze"; label: string; icon: string }[] = [
   { key: "aidbox", label: "Aidbox", icon: `${ASSET_BASE}/images/aidbox.svg` },
   { key: "medplum", label: "Medplum", icon: `${ASSET_BASE}/images/medplum.svg` },
   { key: "hapi", label: "HAPI", icon: `${ASSET_BASE}/images/hapi.png` },
   { key: "microsoft", label: "MS FHIR", icon: `${ASSET_BASE}/images/microsoft.svg` },
   { key: "wso2", label: "WSO2", icon: `${ASSET_BASE}/images/wso2.svg` },
   { key: "intersystems", label: "IrisHealth", icon: `${ASSET_BASE}/images/intersystems.png` },
+  { key: "blaze", label: "Blaze", icon: `${ASSET_BASE}/images/blaze.svg` },
 ];
 
 interface SuiteRow {
   label: string;
   unit: string; // "ms" | "rps" | ...
   lowerBetter: boolean;
-  values: { aidbox: number; medplum: number; hapi: number; microsoft: number; wso2: number; intersystems: number };
+  values: { aidbox: number; medplum: number; hapi: number; microsoft: number; wso2: number; intersystems: number; blaze: number };
 }
 
 interface RunSummaryData {
@@ -46,7 +47,7 @@ function formatRps(v: number): string {
 }
 
 function computeSummary(report: any): RunSummaryData {
-  const servers: ("aidbox" | "medplum" | "hapi" | "microsoft" | "wso2" | "intersystems")[] = ["aidbox", "medplum", "hapi", "microsoft", "wso2", "intersystems"];
+  const servers: ("aidbox" | "medplum" | "hapi" | "microsoft" | "wso2" | "intersystems" | "blaze")[] = ["aidbox", "medplum", "hapi", "microsoft", "wso2", "intersystems", "blaze"];
 
   // Each suite carries the real measured throughput in result.data (the "Total"
   // RPS per server) — no need to derive anything from latency.
@@ -72,6 +73,7 @@ function computeSummary(report: any): RunSummaryData {
         microsoft: total.microsoft || 0,
         wso2: total.wso2 || 0,
         intersystems: total.intersystems || 0,
+        blaze: total.blaze || 0,
       },
     };
   });
@@ -291,7 +293,7 @@ export default function Home() {
                 Performance Benchmark Dashboard
               </h1>
               <p className="text-sm text-gray-600 mt-1">
-                Comparing performance metrics across FHIR servers — Aidbox, Medplum, HAPI, Microsoft FHIR, WSO2 FHIR, and InterSystems IRIS for Health
+                Comparing performance metrics across FHIR servers — Aidbox, Medplum, HAPI, Microsoft FHIR, WSO2 FHIR, InterSystems IRIS for Health, and Blaze
               </p>
             </div>
 
@@ -408,7 +410,7 @@ export default function Home() {
 
 function RunSummary({ summary }: { summary: SummaryState | undefined }) {
   if (summary === undefined || summary === "loading") {
-    return <div className="hidden md:block h-16 w-[42rem] rounded bg-gray-50 animate-pulse" />;
+    return <div className="hidden md:block h-16 w-[48rem] rounded bg-gray-50 animate-pulse" />;
   }
 
   if (summary === "error" || summary.rows.length === 0) {

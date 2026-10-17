@@ -28,6 +28,10 @@ scrape_configs:
     static_configs:
       - targets: ["intersystems:52773"]
 
+  - job_name: blaze
+    static_configs:
+      - targets: ["blaze:8081"]
+
   - job_name: postgres
     static_configs:
       - targets: ["postgres-exporter:9187"]

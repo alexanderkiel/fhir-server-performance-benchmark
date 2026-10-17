@@ -5,12 +5,12 @@ set -e
 # CLI utility for running FHIR server performance tests
 # Usage: ./runner.sh [-t test] [-s server] [-id runId]
 #   -t test: path to test file (e.g., /test/crud.js, /test/search.js)
-#   -s server: target server: aidbox, hapi, medplum, microsoft, wso2, intersystems (optional - runs on all servers if not specified)
+#   -s server: target server: aidbox, hapi, medplum, microsoft, wso2, intersystems, blaze (optional - runs on all servers if not specified)
 #   -id runId: custom run ID (optional - defaults to current UTC timestamp)
 
 # Default values
 DEFAULT_TEST="/k6/prewarm.js"
-ALL_SERVERS="aidbox hapi medplum microsoft wso2 intersystems"
+ALL_SERVERS="aidbox hapi medplum microsoft wso2 intersystems blaze"
 
 # Function to display usage
 show_usage() {
@@ -22,7 +22,7 @@ show_usage() {
     echo ""
     echo "Arguments:"
     echo "  -t test    Path to test file (e.g., /k6/crud.js, /k6/search.js)"
-    echo "  -s server  Target server: aidbox, hapi, medplum, microsoft, wso2, intersystems"
+    echo "  -s server  Target server: aidbox, hapi, medplum, microsoft, wso2, intersystems, blaze"
     echo "  -id runId  Custom run ID (optional - defaults to current UTC timestamp)"
     echo "  -f file    Docker Compose file(s) to use (can be specified multiple times)"
     echo "             If not specified, uses the default docker-compose.yaml"
@@ -50,7 +50,7 @@ bootstrap_services() {
 
     echo "Pulling docker images..."
     echo "================================================"
-    docker compose $COMPOSE_FILES pull aidbox hapi medplum microsoft mssql wso2 intersystems
+    docker compose $COMPOSE_FILES pull aidbox hapi medplum microsoft mssql wso2 intersystems blaze
 
     echo "Starting Docker Compose services  (max $max_attempts attempts)..."
     echo "================================================"
@@ -139,6 +139,12 @@ run_test_on_server() {
         "microsoft")
             run_env="${run_env}
                 export BASE_URL=http://microsoft:8080"
+            ;;
+        "blaze")
+            run_env="${run_env}
+                export BASE_URL=http://blaze:8080/fhir
+                export RESOLVE_CONDITIONAL_REFS=true
+                export UNSUPPORTED_MODIFIERS=:contains"
             ;;
     esac
 

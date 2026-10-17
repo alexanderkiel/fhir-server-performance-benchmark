@@ -56,7 +56,8 @@ function createBenchmarkDataPoints(groupedMetrics) {
             hapi: 0,
             wso2: 0,
             microsoft: 0,
-            intersystems: 0
+            intersystems: 0,
+            blaze: 0
         };
 
         for (const [server, value] of serverMetrics) {
@@ -93,7 +94,8 @@ function getTotalRPS(results, precision = 0) {
         hapi: precision == 0 ? Math.round(serverTotals.get('hapi') || 0) : parseFloat((serverTotals.get('hapi') || 0).toFixed(precision)),
         wso2: precision == 0 ? Math.round(serverTotals.get('wso2') || 0) : parseFloat((serverTotals.get('wso2') || 0).toFixed(precision)),
         microsoft: precision == 0 ? Math.round(serverTotals.get('microsoft') || 0) : parseFloat((serverTotals.get('microsoft') || 0).toFixed(precision)),
-        intersystems: precision == 0 ? Math.round(serverTotals.get('intersystems') || 0) : parseFloat((serverTotals.get('intersystems') || 0).toFixed(precision))
+        intersystems: precision == 0 ? Math.round(serverTotals.get('intersystems') || 0) : parseFloat((serverTotals.get('intersystems') || 0).toFixed(precision)),
+        blaze: precision == 0 ? Math.round(serverTotals.get('blaze') || 0) : parseFloat((serverTotals.get('blaze') || 0).toFixed(precision))
     };
 
     return [dataPoint];
@@ -166,7 +168,8 @@ export function convertSourceToBenchmarkReport(
                 hapi: 0,
                 wso2: 0,
                 microsoft: 0,
-                intersystems: 0
+                intersystems: 0,
+                blaze: 0
             }
             sourceData.import.test_cases.data.result.forEach(result => {
                 data[result.metric.fhirimpl] = Math.round(parseFloat(result.value[1]))

@@ -48,20 +48,50 @@ export function setup() {
   // FHIR impl then imports the exact same set of bundles in the same order.
   http.post(`${bundleUrl}/reset`, null)
 
+  // Blaze can't resolve conditional references (samply/blaze#433): it stores
+  // the bundles' `Practitioner?identifier=...` references verbatim, so its
+  // imports would skip the lookups the other servers do and the reference
+  // searches on Practitioner would come back empty. For it, collect the ids the
+  // seed batches create and rewrite those references to literal ones before
+  // posting, which Blaze then checks for referential integrity.
+  const refs = __ENV.RESOLVE_CONDITIONAL_REFS === 'true' ? {} : null
+
   // First - load hospital and practitioner information
   const seeds = ["hospitalInformation.json", "practitionerInformation.json"]
   seeds.forEach(x => {
     const src = http.get(`${bundleUrl}/${x}`, {responseType: 'text'})
-    http.post(baseUrl, src.body, params)
+    const res = http.post(baseUrl, src.body, refs ? { ...params, responseType: 'text' } : params)
+    if (refs) Object.assign(refs, literalRefs(JSON.parse(src.body), res.json()))
   })
+  if (refs) console.log(`resolving ${Object.keys(refs).length} conditional references`)
 
 
-  return { baseUrl, bundleUrl, params, }
+  return { baseUrl, bundleUrl, params, refs, }
 }
 
-export default function ({ baseUrl, bundleUrl, params, }) {
+// Maps each conditional create of a seed batch ("Organization?identifier=...")
+// to the literal reference of the resource it created ("Organization/<id>").
+function literalRefs(bundle, response) {
+  const refs = {}
+  bundle.entry.forEach(({ request }, i) => {
+    const location = response.entry[i].response.location
+    if (!request.ifNoneExist || !location) return
+    const id = location.split('/_history')[0].split('/').pop()
+    refs[`${request.url}?${request.ifNoneExist}`] = `${request.url}/${id}`
+  })
+  return refs
+}
+
+const CONDITIONAL_REF = /"reference"\s*:\s*"([A-Za-z]+\?[^"]+)"/g
+
+function resolveConditionalRefs(body, refs) {
+  return body.replace(CONDITIONAL_REF, (match, ref) => refs[ref] ? `"reference":"${refs[ref]}"` : match)
+}
+
+export default function ({ baseUrl, bundleUrl, params, refs, }) {
   const bundle = http.get( bundleUrl, { tags: { group: '::source' }, responseType: 'text' })
-  const x = http.post( baseUrl, bundle.body, { ...params, tags: { group: '::import' } })
+  const body = refs ? resolveConditionalRefs(bundle.body, refs) : bundle.body
+  const x = http.post( baseUrl, body, { ...params, tags: { group: '::import' } })
 
   if (!check(x, { ['Bundle import']: ({ status }) => status === 200 })) return
   bundleSize.add(JSON.parse(bundle.body).entry.length)

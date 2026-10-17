@@ -186,10 +186,14 @@ function validateBenchmarkDataPoint(dataPoint: any, suiteIndex: number, dataInde
     throw new Error(`Invalid data point ${dataIndex} in suite ${suiteIndex}: wso2 must be a number`);
   }
 
-  // intersystems was added after wso2; same treatment so older SNAPSHOT_*.json
+  // intersystems and blaze were added after wso2; same treatment so older SNAPSHOT_*.json
   // still parse.
   if ('intersystems' in dataPoint && typeof dataPoint.intersystems !== 'number') {
     throw new Error(`Invalid data point ${dataIndex} in suite ${suiteIndex}: intersystems must be a number`);
+  }
+
+  if ('blaze' in dataPoint && typeof dataPoint.blaze !== 'number') {
+    throw new Error(`Invalid data point ${dataIndex} in suite ${suiteIndex}: blaze must be a number`);
   }
 
   return {
@@ -200,6 +204,7 @@ function validateBenchmarkDataPoint(dataPoint: any, suiteIndex: number, dataInde
     microsoft: dataPoint.microsoft ?? 0,
     wso2: dataPoint.wso2 ?? 0,
     intersystems: dataPoint.intersystems ?? 0,
+    blaze: dataPoint.blaze ?? 0,
   };
 }
 
@@ -250,7 +255,7 @@ function validateTestCase(testCase: any, suiteIndex: number, testIndex: number) 
  * Get all server names from a benchmark report
  */
 export function getServerNames(report: BenchmarkReport): ServerName[] {
-  return ['aidbox', 'medplum', 'hapi', 'microsoft', 'wso2', 'intersystems'];
+  return ['aidbox', 'medplum', 'hapi', 'microsoft', 'wso2', 'intersystems', 'blaze'];
 }
 
 /**
